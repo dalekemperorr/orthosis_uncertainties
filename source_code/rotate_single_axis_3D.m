@@ -42,7 +42,7 @@ function axis_vector_rot = rotate_single_axis_3D(axis_vector, angle_deg_vector)
     
     A_rot = A_rot_x + A_rot_y + A_rot_z - 2*axis_vector_norm;
     
-    axis_vector_rot = A_rot./sqrt(sumsqr(A_rot));
+    axis_vector_rot = A_rot./sqrt(sum(A_rot.^2));
    
 
 end

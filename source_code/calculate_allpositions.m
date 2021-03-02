@@ -119,16 +119,18 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector ] =
         else
            Gamma = Gamma_start - mod(Gamma_start, Gamma_step) + (i_gamma -1)*Gamma_step;
            Gamma = deg2rad(Gamma_start - mod(Gamma_start, Gamma_step) + (i_gamma -1)*Gamma_step);    
-          end
+        end
         if(and(i_alpha==1, i_beta == 1))
-         GammaValues_vector(i_gamma) = rad2deg(Gamma);
+            GammaValues_vector(i_gamma) = rad2deg(Gamma);
         end
         %main uncertainities searching loop
         for i_unc = 1:Uncert_nb     
  
             [Axis_X_vector, Axis_Y_vector, Axis_Z_vector] = add_uncertainty(Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, i_unc -1);
             
+            %calculate row index for store partial values in memory
             index = (i_alpha-1)*Beta_steps_nb*Gamma_steps_nb*Uncert_nb + (i_beta-1)*Gamma_steps_nb*Uncert_nb + (i_gamma-1)*Uncert_nb + i_unc;
+            %register all important partial data for further save it to .csv file
             Data(index, 1:21) = [Axis_X_vector, Axis_Y_vector, Axis_Z_vector, rad2deg(Alpha), rad2deg(Beta), rad2deg(Gamma)];
  
             %Axis_X_vector = Axis_X_vector_nom;  %debug
@@ -176,7 +178,6 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector ] =
 
             %5.40
             Beta_kon_v1 = angle_correction(asin(R_kon_3(2,1)));
-
             Beta_kon_v2 = angle_correction(pi - asin(R_kon_3(2,1)));
 
             %5.41
@@ -200,6 +201,9 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector ] =
                 Beta_kon  = Beta_kon_v2;
                 Gamma_kon = Gamma_kon_v2;      
             end
+            
+            %force limits on angles
+            [Alpha_kon, Beta_kon, Gamma_kon] = force_limits(Alpha_kon, Beta_kon, Gamma_kon);
 
  
             %5.43
@@ -212,7 +216,7 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector ] =
             %5.44
             Delta_T(i_alpha, i_beta, i_gamma, i_unc)  = (sqrt(sum((A_kon_3-A_ort_3).^2)) + sqrt(sum((B_kon_3-B_ort_3).^2)))/2;
 
-            
+            %register all important partial data and save it to .csv file
             Data(index, 22:30) = [rad2deg(Alpha_kon), rad2deg(Beta_kon), rad2deg(Gamma_kon), rad2deg(abs(Alpha_kon - Alpha)), rad2deg(abs(Beta_kon - Beta)), rad2deg(abs(Gamma_kon - Gamma)), sqrt(sum(Delta_A.^2)), sqrt(sum(Delta_B.^2)), (sqrt(sum((A_kon_3-A_ort_3).^2)) + sqrt(sum((B_kon_3-B_ort_3).^2)))/2];
             dlmwrite(Filename, Data(index, 1:30), '-append','delimiter', ';'); 
 
