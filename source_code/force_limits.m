@@ -11,9 +11,9 @@
 function [ alpha_out, beta_out, gamma_out ] = force_limits( alpha_in, beta_in, gamma_in )
 
 %Arbitrary limits [limit_min, limit_max] for each angle in degrees
-alpha_limits_deg = [ -5, 40];
-beta_limits_deg = [ -5, 40];
-gamma_limits_deg = [ -5, 90];
+alpha_limits_deg = [ -30, 30];
+beta_limits_deg = [ -40, 40];
+gamma_limits_deg = [ -10, 110];
 
 %should be calculated once and static for better performance
 alpha_limits_rad = deg2rad(alpha_limits_deg);
