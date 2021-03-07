@@ -19,8 +19,9 @@
 %gamma combination
 %[out]  Delta_T - 4D matrix with uncerainties for each alpha, beta,
 %gamma combination
+%[out]  Filename - output filename
 %==========================================================================
-function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector] = calculate_fromfile( Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, A_kon, B_kon, A_ort, B_ort, S, R, L )
+function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector] = calculate_fromfile( Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, A_kon, B_kon, A_ort, B_ort, S, R, L, Filename)
 
     %% Orthosis measured angles
     filename = uigetfile('*.csv');
@@ -32,6 +33,7 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector] = 
 
     %number of combinations of uncertainties under consideration
     Uncert_nb = 64;
+    Data = zeros(steps_nb, 30);
 
     %init vector
     B_rzu_3 = [0, 0, 0]';
@@ -52,6 +54,11 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector] = 
      %       Axis_X_vector = Axis_X_vector_nom;  %debug
      %       Axis_Y_vector = Axis_Y_vector_nom;  %debug
      %       Axis_Z_vector = Axis_Z_vector_nom;  %debug
+ 
+            %calculate row index for store partial values in memory
+            index = (i-1)*Uncert_nb + i_unc;
+            %register all important partial data for further save it to .csv file
+            Data(index, 1:21) = [Axis_X_vector, Axis_Y_vector, Axis_Z_vector, rad2deg(Alpha), rad2deg(Beta), rad2deg(Gamma)];
 
             %5.23
             A_ort_3 = rotate_point_around_3tilted_axis(A_ort, Axis_X_vector, Axis_Y_vector, Axis_Z_vector, Alpha, Beta, Gamma);
@@ -129,6 +136,10 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector] = 
 
             %5.44
             Delta_T(i, i_unc)  = (sqrt(sum((A_kon_3-A_ort_3).^2)) + sqrt(sum((B_kon_3-B_ort_3).^2)))/2;
+ 
+            %register all important partial data and save it to .csv file
+            Data(index, 22:30) = [rad2deg(Alpha_kon), rad2deg(Beta_kon), rad2deg(Gamma_kon), rad2deg(abs(Alpha_kon - Alpha)), rad2deg(abs(Beta_kon - Beta)), rad2deg(abs(Gamma_kon - Gamma)), sqrt(sum(Delta_A.^2)), sqrt(sum(Delta_B.^2)), (sqrt(sum((A_kon_3-A_ort_3).^2)) + sqrt(sum((B_kon_3-B_ort_3).^2)))/2];
+            dlmwrite(Filename, Data(index, 1:30), '-append','delimiter', ';'); 
 
         end
     end
