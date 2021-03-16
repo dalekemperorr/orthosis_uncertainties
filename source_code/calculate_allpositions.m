@@ -72,7 +72,7 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector ] =
     GammaValues_vector = zeros(1,Gamma_steps_nb);
  
     %number of combinations of uncertainties under consideration
-    Uncert_nb = 64;
+    Uncert_nb = 512;
     
     Data = zeros(Alpha_steps_nb*Beta_steps_nb*Gamma_steps_nb*Uncert_nb, 30);
 
@@ -126,7 +126,7 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector ] =
         %main uncertainities searching loop
         for i_unc = 1:Uncert_nb     
  
-            [Axis_X_vector, Axis_Y_vector, Axis_Z_vector] = add_uncertainty(Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, i_unc -1);
+            [Alpha, Beta, Gamma, Axis_X_vector, Axis_Y_vector, Axis_Z_vector] = add_uncertainty(Alpha, Beta, Gamma, Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, i_unc -1);
             
             %calculate row index for store partial values in memory
             index = (i_alpha-1)*Beta_steps_nb*Gamma_steps_nb*Uncert_nb + (i_beta-1)*Gamma_steps_nb*Uncert_nb + (i_gamma-1)*Uncert_nb + i_unc;

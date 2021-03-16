@@ -13,7 +13,7 @@ Axis_Y_vector_nom = [0, 0, 0, 0, 1, 0];
 Axis_Z_vector_nom = [0, 0, 0, 0, 0, 1];
 
 %% Starting conditions:
-Filename = 'Output_fromfile1.csv';
+Filename = 'Output_fromfile4.csv';
 R = 150;
 L = 350;
 S = [0, 0, 0]';

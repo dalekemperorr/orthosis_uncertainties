@@ -32,7 +32,7 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector] = 
     
 
     %number of combinations of uncertainties under consideration
-    Uncert_nb = 64;
+    Uncert_nb = 512;
     Data = zeros(steps_nb, 30);
 
     %init vector
@@ -49,7 +49,7 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector] = 
         GammaValues_vector(i) = Gamma;            
         %main uncertainities searching loop
         for i_unc = 1:Uncert_nb     
-            [Axis_X_vector, Axis_Y_vector, Axis_Z_vector] = add_uncertainty(Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, i_unc -1);
+            [Alpha, Beta, Gamma, Axis_X_vector, Axis_Y_vector, Axis_Z_vector] = add_uncertainty(Alpha, Beta, Gamma, Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, i_unc -1);
 
      %       Axis_X_vector = Axis_X_vector_nom;  %debug
      %       Axis_Y_vector = Axis_Y_vector_nom;  %debug
