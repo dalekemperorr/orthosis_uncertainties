@@ -22,6 +22,7 @@
 %==========================================================================
 function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector ] = calculate_allpositions( Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, A_kon, B_kon, A_ort, B_ort, S, R, L, Filename )
 
+    tic
     %% Orthosis measured angles
     %Alpha [deg]
     %Alpha_step = 10;
@@ -218,13 +219,14 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector ] =
 
             %register all important partial data and save it to .csv file
             Data(index, 22:30) = [rad2deg(Alpha_kon), rad2deg(Beta_kon), rad2deg(Gamma_kon), rad2deg(abs(Alpha_kon - Alpha)), rad2deg(abs(Beta_kon - Beta)), rad2deg(abs(Gamma_kon - Gamma)), sqrt(sum(Delta_A.^2)), sqrt(sum(Delta_B.^2)), (sqrt(sum((A_kon_3-A_ort_3).^2)) + sqrt(sum((B_kon_3-B_ort_3).^2)))/2];
-            dlmwrite(Filename, Data(index, 1:30), '-append','delimiter', ';'); 
-
+  
         end
     end
 
     end
     end
+    
+    dlmwrite(Filename, Data(:, 1:30), '-append','delimiter', ';'); 
 
 end
 

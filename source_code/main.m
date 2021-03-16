@@ -7,13 +7,14 @@ clear
 MODE = 0;
 
 
+
 %% Nominal Orthosis axis definition [X, Y, Z, i, j, k] 
 Axis_X_vector_nom = [0, 0, 0, 1, 0, 0];
 Axis_Y_vector_nom = [0, 0, 0, 0, 1, 0];
 Axis_Z_vector_nom = [0, 0, 0, 0, 0, 1];
 
 %% Starting conditions:
-Filename = 'Output_fromfile4.csv';
+Filename = 'Output_fromfile5.csv';
 R = 150;
 L = 350;
 S = [0, 0, 0]';
@@ -33,7 +34,5 @@ end
 
 extract_output2( Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector );
 
+toc
 disp('Calculations done, output data saved in file.')
-
-
-
