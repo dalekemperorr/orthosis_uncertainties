@@ -4,7 +4,7 @@ clear
 %% SELECT MODE
 % 0- Perform calculations for positions read from file
 % 1- Perform calculations for all possible positions
-MODE = 0;
+MODE = 1;
 
 
 
@@ -15,8 +15,8 @@ Axis_Z_vector_nom = [0, 0, 0, 0, 0, 1];
 
 %% Starting conditions:
 Filename = 'Output_fromfile5.csv';
-R = 150;
-L = 350;
+R = 120;
+L = 77.5;
 S = [0, 0, 0]';
 R_v = [R, 0, 0]';
 L_v = [0, 0, -L]';

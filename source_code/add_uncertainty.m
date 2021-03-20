@@ -1,11 +1,13 @@
 %==========================================================================
 %[name] add_uncertainty
 %[desc] add uncertainity to position based on iterator
-%[in]   V_in - Vector
+%[in]   alpha_in, beta_in, gamma_in - measured angles of orthosis [rad]
+%[in]   V_in - Vector xyzijk with Axis orientation
 %[in]   i - iterator, selects proper case for adding uncertainity
-%[out]  V_out - Vector
+%[out]  V_out - Vector xyzijk with Axis orientation
+%[out]  alpha_out, beta_out, gamma_out - measured angles of orthosis with uncertainties added [rad]
 %==========================================================================
-function [alpha, beta, gamma, VX_out, VY_out, VZ_out ] = add_uncertainty(alpha, beta, gamma, VX_in, VY_in, VZ_in, i)
+function [alpha_out, beta_out, gamma_out, VX_out, VY_out, VZ_out ] = add_uncertainty(alpha_in, beta_in, gamma_in, VX_in, VY_in, VZ_in, i)
 
     %initialization
     U= zeros(3,6);
@@ -21,7 +23,7 @@ function [alpha, beta, gamma, VX_out, VY_out, VZ_out ] = add_uncertainty(alpha, 
     U(3,:) = [20.48, 18.46, 21.84, 5.36, 3.91, 2.52];  %Z
     
     %Uncertaintes values for measured angle [uAlphaOrt deg, uBetaOrt, uGammaOrt deg]
-    Uort = [5.0, 5.0, 9.0];
+    Uort = [U(2,5), U(3,6), U(1,4)];
 
     %implementation of table 5.29 (combination of uncertainties)
     for j = 9:-1:1
@@ -39,10 +41,12 @@ function [alpha, beta, gamma, VX_out, VY_out, VZ_out ] = add_uncertainty(alpha, 
                 VZ_out(j-3) = VZ_in(j-3) + U(3,j-3);
                 %fprintf('j= %d, +', j)         %debug
             %orthosis measured angle
-            else
-                alpha = alpha + deg2rad(Uort(1)); 
-                beta  = beta  + deg2rad(Uort(2)); 
-                gamma = gamma + deg2rad(Uort(3)); 
+            elseif(j==3)
+                gamma_out = gamma_in + deg2rad(Uort(3)); 
+            elseif(j==2)
+                beta_out  = beta_in  + deg2rad(Uort(2)); 
+            elseif(j==1)
+                alpha_out = alpha_in + deg2rad(Uort(1)); 
              end
                 
             
@@ -59,11 +63,13 @@ function [alpha, beta, gamma, VX_out, VY_out, VZ_out ] = add_uncertainty(alpha, 
                 VZ_out(j-3) = VZ_in(j-3) - U(3,j-3);
                 %fprintf('j= %d, +', j)         %debug
             %orthosis measured angle
-            else
-                alpha = alpha - deg2rad(Uort(1)); 
-                beta  = beta  - deg2rad(Uort(2)); 
-                gamma = gamma - deg2rad(Uort(3)); 
-            end
+            elseif(j==3)
+                gamma_out = gamma_in - deg2rad(Uort(3)); 
+            elseif(j==2)
+                beta_out  = beta_in  - deg2rad(Uort(2)); 
+            elseif(j==1)
+                alpha_out = alpha_in - deg2rad(Uort(1)); 
+             end
          end
         
         %update mask for next vector's item

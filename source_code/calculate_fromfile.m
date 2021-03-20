@@ -34,7 +34,7 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector] = 
 
     %number of combinations of uncertainties under consideration
     Uncert_nb = 512;
-    Data = zeros(steps_nb, 30);
+    Data = zeros(steps_nb, 33);
 
     %init vector
     B_rzu_3 = [0, 0, 0]';
@@ -44,23 +44,19 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector] = 
     Delta_T = zeros(steps_nb, Uncert_nb);
 
     for i = 1:steps_nb+1
-        Alpha = deg2rad(InputData.Alfa(i));
-        Beta =  deg2rad(InputData.Beta(i));
-        Gamma = deg2rad(InputData.Gamma(i));
-        GammaValues_vector(i) = Gamma;            
+        Alpha_raw = deg2rad(InputData.Alfa(i));
+        Beta_raw =  deg2rad(InputData.Beta(i));
+        Gamma_raw = deg2rad(InputData.Gamma(i));
+        GammaValues_vector(i) = Gamma_raw;            
         %main uncertainities searching loop
         for i_unc = 1:Uncert_nb     
-            [Alpha, Beta, Gamma, Axis_X_vector, Axis_Y_vector, Axis_Z_vector] = add_uncertainty(Alpha, Beta, Gamma, Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, i_unc -1);
+            [Alpha, Beta, Gamma, Axis_X_vector, Axis_Y_vector, Axis_Z_vector] = add_uncertainty(Alpha_raw, Beta_raw, Gamma_raw, Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, i_unc -1);
 
      %       Axis_X_vector = Axis_X_vector_nom;  %debug
      %       Axis_Y_vector = Axis_Y_vector_nom;  %debug
      %       Axis_Z_vector = Axis_Z_vector_nom;  %debug
  
-            %calculate row index for store partial values in memory
-            index = (i-1)*Uncert_nb + i_unc;
-            %register all important partial data for further save it to .csv file
-            Data(index, 1:21) = [Axis_X_vector, Axis_Y_vector, Axis_Z_vector, rad2deg(Alpha), rad2deg(Beta), rad2deg(Gamma)];
-
+   
             %5.23
             A_ort_3 = rotate_point_around_3tilted_axis(A_ort, Axis_X_vector, Axis_Y_vector, Axis_Z_vector, Alpha, Beta, Gamma);
             %5.24
@@ -138,12 +134,14 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector] = 
             %5.44
             Delta_T(i, i_unc)  = (sqrt(sum((A_kon_3-A_ort_3).^2)) + sqrt(sum((B_kon_3-B_ort_3).^2)))/2;
  
+            %calculate row index for store partial values in memory
+            index = (i-1)*Uncert_nb + i_unc;
             %register all important partial data and save it to .csv file
-            Data(index, 22:30) = [rad2deg(Alpha_kon), rad2deg(Beta_kon), rad2deg(Gamma_kon), rad2deg(abs(Alpha_kon - Alpha)), rad2deg(abs(Beta_kon - Beta)), rad2deg(abs(Gamma_kon - Gamma)), sqrt(sum(Delta_A.^2)), sqrt(sum(Delta_B.^2)), (sqrt(sum((A_kon_3-A_ort_3).^2)) + sqrt(sum((B_kon_3-B_ort_3).^2)))/2];
+            Data(index, :) = [Axis_X_vector, Axis_Y_vector, Axis_Z_vector, rad2deg(Alpha_raw), rad2deg(Beta_raw), rad2deg(Gamma_raw),rad2deg(Alpha), rad2deg(Beta), rad2deg(Gamma), rad2deg(Alpha_kon), rad2deg(Beta_kon), rad2deg(Gamma_kon), rad2deg(Alpha_kon - Alpha_raw), rad2deg(Beta_kon - Beta_raw), rad2deg(Gamma_kon - Gamma_raw), sqrt(sum(Delta_A.^2)), sqrt(sum(Delta_B.^2)), (sqrt(sum((A_kon_3-A_ort_3).^2)) + sqrt(sum((B_kon_3-B_ort_3).^2)))/2];
         end        
     end
     
-    dlmwrite(Filename, Data(:, 1:30), '-append','delimiter', ';');
+    dlmwrite(Filename, Data(:, 1:33), '-append','delimiter', ';');
 
 end
 

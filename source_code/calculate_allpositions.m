@@ -23,6 +23,9 @@
 function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector ] = calculate_allpositions( Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, A_kon, B_kon, A_ort, B_ort, S, R, L, Filename )
 
     tic
+ %   cluster = parcluster;
+ %   cluster.NumWorkers = 8;
+    parallerCalc = parpool(4)
     %% Orthosis measured angles
     %Alpha [deg]
     %Alpha_step = 10;
@@ -75,7 +78,8 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector ] =
     %number of combinations of uncertainties under consideration
     Uncert_nb = 512;
     
-    Data = zeros(Alpha_steps_nb*Beta_steps_nb*Gamma_steps_nb*Uncert_nb, 30);
+    Data = zeros(Alpha_steps_nb*Beta_steps_nb*Gamma_steps_nb*Uncert_nb, 33);
+    Data_temp = zeros(Uncert_nb, 33);
 
     %init vector
     B_rzu_3 = [0, 0, 0]';
@@ -86,54 +90,50 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector ] =
 
     %Now real calculations: starting with 4 nested loops- 3 for measured angles
     %sweep and 4th for uncertainties combination
-    for i_alpha = 1:Alpha_steps_nb+1
+    for i_alpha = 1:Alpha_steps_nb
         if (i_alpha ==1)
-            Alpha = Alpha_start;
-            Alpha = deg2rad(Alpha_start);
-        elseif (i_alpha == Alpha_steps_nb+1)
-            Alpha = Alpha_end;
-            Alpha = deg2rad(Alpha_end); 
+            Alpha_raw = Alpha_start;
+            Alpha_raw = deg2rad(Alpha_start);
+        elseif (i_alpha == Alpha_steps_nb)
+            Alpha_raw = Alpha_end;
+            Alpha_raw = deg2rad(Alpha_end); 
         else
-           Alpha = Alpha_start - mod(Alpha_start, Alpha_step) + (i_alpha -1)*Alpha_step;
-           Alpha = deg2rad(Alpha_start - mod(Alpha_start, Alpha_step) + (i_alpha -1)*Alpha_step);    
+           Alpha_raw = Alpha_start - mod(Alpha_start, Alpha_step) + (i_alpha -1)*Alpha_step;
+           Alpha_raw = deg2rad(Alpha_start - mod(Alpha_start, Alpha_step) + (i_alpha -1)*Alpha_step);    
         end
 
-    for i_beta = 1:Beta_steps_nb+1
+    for i_beta = 1:Beta_steps_nb
          if (i_beta ==1)
-            Beta = Beta_start;
-            Beta = deg2rad(Beta_start);
-        elseif (i_beta == Beta_steps_nb+1)
-            Beta = Beta_end;
-            Beta = deg2rad(Beta_end); 
+            Beta_raw = Beta_start;
+            Beta_raw = deg2rad(Beta_start);
+        elseif (i_beta == Beta_steps_nb)
+            Beta_raw = Beta_end;
+            Beta_raw = deg2rad(Beta_end); 
         else
-           Beta = Beta_start - mod(Beta_start, Beta_step) + (i_beta -1)*Beta_step;
-           Beta = deg2rad(Beta_start - mod(Beta_start, Beta_step) + (i_beta -1)*Beta_step);    
+           Beta_raw = Beta_start - mod(Beta_start, Beta_step) + (i_beta -1)*Beta_step;
+           Beta_raw = deg2rad(Beta_start - mod(Beta_start, Beta_step) + (i_beta -1)*Beta_step);    
          end
 
-    for i_gamma = 1:Gamma_steps_nb+1
+    for i_gamma = 1:Gamma_steps_nb
         if (i_gamma ==1)
-            Gamma = Gamma_start;
-            Gamma = deg2rad(Gamma_start);
-        elseif (i_gamma == Gamma_steps_nb+1)
-            Gamma = Gamma_end;
-            Gamma = deg2rad(Gamma_end); 
+            Gamma_raw = Gamma_start;
+            Gamma_raw = deg2rad(Gamma_start);
+        elseif (i_gamma == Gamma_steps_nb)
+            Gamma_raw = Gamma_end;
+            Gamma_raw = deg2rad(Gamma_end); 
         else
-           Gamma = Gamma_start - mod(Gamma_start, Gamma_step) + (i_gamma -1)*Gamma_step;
-           Gamma = deg2rad(Gamma_start - mod(Gamma_start, Gamma_step) + (i_gamma -1)*Gamma_step);    
+           Gamma_raw = Gamma_start - mod(Gamma_start, Gamma_step) + (i_gamma -1)*Gamma_step;
+           Gamma_raw = deg2rad(Gamma_start - mod(Gamma_start, Gamma_step) + (i_gamma -1)*Gamma_step);    
         end
         if(and(i_alpha==1, i_beta == 1))
-            GammaValues_vector(i_gamma) = rad2deg(Gamma);
+            GammaValues_vector(i_gamma) = rad2deg(Gamma_raw);
         end
-        %main uncertainities searching loop
-        for i_unc = 1:Uncert_nb     
- 
-            [Alpha, Beta, Gamma, Axis_X_vector, Axis_Y_vector, Axis_Z_vector] = add_uncertainty(Alpha, Beta, Gamma, Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, i_unc -1);
+       %main uncertainities searching loop
+        parfor i_unc = 1:Uncert_nb 
+
+ %           Data_temp = zeros(Uncert_nb, 30);
+            [Alpha, Beta, Gamma, Axis_X_vector, Axis_Y_vector, Axis_Z_vector] = add_uncertainty(Alpha_raw, Beta_raw, Gamma_raw, Axis_X_vector_nom, Axis_Y_vector_nom, Axis_Z_vector_nom, i_unc -1);
             
-            %calculate row index for store partial values in memory
-            index = (i_alpha-1)*Beta_steps_nb*Gamma_steps_nb*Uncert_nb + (i_beta-1)*Gamma_steps_nb*Uncert_nb + (i_gamma-1)*Uncert_nb + i_unc;
-            %register all important partial data for further save it to .csv file
-            Data(index, 1:21) = [Axis_X_vector, Axis_Y_vector, Axis_Z_vector, rad2deg(Alpha), rad2deg(Beta), rad2deg(Gamma)];
- 
             %Axis_X_vector = Axis_X_vector_nom;  %debug
             %Axis_Y_vector = Axis_Y_vector_nom;  %debug
             %Axis_Z_vector = Axis_Z_vector_nom;  %debug
@@ -217,16 +217,24 @@ function [ Delta_Alpha, Delta_Beta, Delta_Gamma, Delta_T, GammaValues_vector ] =
             %5.44
             Delta_T(i_alpha, i_beta, i_gamma, i_unc)  = (sqrt(sum((A_kon_3-A_ort_3).^2)) + sqrt(sum((B_kon_3-B_ort_3).^2)))/2;
 
-            %register all important partial data and save it to .csv file
-            Data(index, 22:30) = [rad2deg(Alpha_kon), rad2deg(Beta_kon), rad2deg(Gamma_kon), rad2deg(abs(Alpha_kon - Alpha)), rad2deg(abs(Beta_kon - Beta)), rad2deg(abs(Gamma_kon - Gamma)), sqrt(sum(Delta_A.^2)), sqrt(sum(Delta_B.^2)), (sqrt(sum((A_kon_3-A_ort_3).^2)) + sqrt(sum((B_kon_3-B_ort_3).^2)))/2];
-  
+            %register all important partial data for further save it to .csv file
+            Data_temp(i_unc, :) = [Axis_X_vector, Axis_Y_vector, Axis_Z_vector, rad2deg(Alpha_raw), rad2deg(Beta_raw), rad2deg(Gamma_raw),rad2deg(Alpha), rad2deg(Beta), rad2deg(Gamma), rad2deg(Alpha_kon), rad2deg(Beta_kon), rad2deg(Gamma_kon), rad2deg(Alpha_kon - Alpha_raw), rad2deg(Beta_kon - Beta_raw), rad2deg(Gamma_kon - Gamma_raw), sqrt(sum(Delta_A.^2)), sqrt(sum(Delta_B.^2)), (sqrt(sum((A_kon_3-A_ort_3).^2)) + sqrt(sum((B_kon_3-B_ort_3).^2)))/2];
         end
+         
+    %progress display
+    index = (i_alpha-1)*Beta_steps_nb*Gamma_steps_nb*Uncert_nb + (i_beta-1)*Gamma_steps_nb*Uncert_nb + (i_gamma-1)*Uncert_nb + 1;
+    steps_nb = index + Uncert_nb-1;
+    Progress_string = sprintf('Calculated %d / %d steps(%.2f %%)', steps_nb, Alpha_steps_nb*Beta_steps_nb*Gamma_steps_nb*Uncert_nb, steps_nb/(Alpha_steps_nb*Beta_steps_nb*Gamma_steps_nb*Uncert_nb)*100);
+    clc
+    disp(Progress_string)
+    %copy from temporary variable for further usage (save to file)
+    Data(index:index+Uncert_nb-1, :) = Data_temp;
+  end
+ 
     end
-
     end
-    end
-    
-    dlmwrite(Filename, Data(:, 1:30), '-append','delimiter', ';'); 
+    delete(gcp('nocreate'))
+    dlmwrite(Filename, Data(:, 1:33), '-append','delimiter', ';'); 
 
 end
 
