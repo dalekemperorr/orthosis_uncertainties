@@ -18,10 +18,10 @@ function [alpha_out, beta_out, gamma_out, VX_out, VY_out, VZ_out ] = add_uncerta
     VZ_out = VZ_in;
  
     %Uncertaintes values [ux mm, uy mm, uz mm, ualfa deg, ubeta deg, ugamma deg]
-    U(1,:) = [17.61, 17.98, 23.06, 4.61, 5.76, 4.74];  %X
-    U(2,:) = [15.23, 15.55, 15.77, 4.17, 2.58, 2.17];  %Y
-    U(3,:) = [20.48, 18.46, 21.84, 5.36, 3.91, 2.52];  %Z
-    
+    U(2,:) = [10.07, 10.55, 10.77, 1.17, 2.58, 1.17];  %Y
+    U(3,:) = [14.46, 13.461 16.84, 2.36, 2.33, 2.52];  %Z
+    U(1,:) = [12.61, 13.77, 16.83, 2.61, 4.18, 3.22];  %X
+   
     %Uncertaintes values for measured angle [uAlphaOrt deg, uBetaOrt, uGammaOrt deg]
     Uort = [U(2,5), U(3,6), U(1,4)];
 
